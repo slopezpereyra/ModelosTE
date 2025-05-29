@@ -1,6 +1,6 @@
 import math
-from random import random
 import pandas as pd
+from generators import SEED
 
 def lambda_t(t):
     """Intensidad del proceso en función del tiempo (en horas): 
@@ -10,37 +10,37 @@ def lambda_t(t):
     """
     return 20 + 10 * math.cos(math.pi * t / 12)
 
-def poisson_no_homogeneo(T,u_function, lambda_function=lambda_t,  lambda_max=30):
+def poisson_no_homogeneo(T, generator, lambda_function=lambda_t,  lambda_max=30):
     """
     Dada una función λ(t), simula un proceso de Poisson no homogéneo con dicha
     función, donde λₘₐₓ debe especificarse. Seteamos λₘₐₓ en 30 por defecto
     porque es el valor máximo de λ(t) = 20 + 10 (cos π ⋅ t/12).
 
-    Utiliza una función generadora de uniformes `u_function`.
+    Utiliza una función generadora de uniformes `generator`.
     Simula tiempos de llegada usando el método de rechazo (thinning).
     
     T: tiempo total a simular (en horas)
-    u_function: función generadora de números uniformes U(0,1)
+    generator: función generadora de números uniformes U(0,1)
     lambda_max: cota superior de lambda(t)
     """
     t = 0
     arrivals = []
     while t < T:
-        u1 = u_function()
-        delta = -math.log(u1) / lambda_max  # tiempo candidato
+        u = generator.gen_uniform()
+        delta = -math.log(u) / lambda_max  
         t += delta
         if t >= T:
             break
-        u2 = u_function()
-        if u2 < lambda_function(t) / lambda_max:
+        u = generator.gen_uniform()
+        if u < lambda_function(t) / lambda_max:
             arrivals.append(t)
     return arrivals
 
-def sim_exponencial(lamda):
-  U = 1-random()
+def sim_exponencial(lamda, generator):
+  U = 1 - generator.gen_uniform()
   return -math.log(U)/lamda
 
-def simular_cola(arrivals, mu):
+def simular_cola(arrivals, mu, generator):
     """
     Simula una cola de un solo servidor (FIFO).
     
@@ -60,7 +60,7 @@ def simular_cola(arrivals, mu):
 
     # Por cada arrival, debemos simular su tiempo de atención.
     for arr in arrivals:
-        duracion = sim_exponencial(1/mu)
+        duracion = sim_exponencial(1/mu, generator)
         # (s, e): Tiempo en que empieza y termina la atención, respectivamente.
         s = max(arr, corte) 
         e = s + duracion
@@ -75,7 +75,7 @@ def simular_cola(arrivals, mu):
 
 
 
-def main(u_function):
+def main(generator):
     """
     Dada una función que genera uniformes, corre toda la simulación, formatea
     los valores en un data frame y lo devuelve. Las features del data frame son: 
@@ -88,8 +88,8 @@ def main(u_function):
     -TFin: Tiempo en que se retiró de la cola
 
     """
-    arrivals = poisson_no_homogeneo(48, u_function)
-    tiempos_espera, tiempos_en_sistema = simular_cola(35)
+    arrivals = poisson_no_homogeneo(48, generator)
+    tiempos_espera, tiempos_en_sistema = simular_cola(arrivals, 35, generator)
     
     df = pd.DataFrame({
           "TLlegada": arrivals,
@@ -104,3 +104,5 @@ def main(u_function):
     df["TFin"] = df["TInicio"] + df["Duracion"]
 
     return df
+
+

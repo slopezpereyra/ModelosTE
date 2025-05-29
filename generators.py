@@ -1,6 +1,7 @@
-import random
+SEED = 48151
 
-def gcl(seed, a=16807, c=0, m=2**31 - 1, n=10):
+
+def gcl(y_prev, a=16807, c=0, m=2**31 - 1):
     """GCL: Implementa  
 
     Yₙ = aYₙ₋₁ + c    mod(m)        
@@ -9,26 +10,59 @@ def gcl(seed, a=16807, c=0, m=2**31 - 1, n=10):
     defecto, fija los parámetros a, c y m a los establecidos en la consigna del
     trabajo especial.
     """
-    values = []
-    y = seed
-    for _ in range(n):
-        y = (a * y + c) % m
-        u = y / m
-        values.append(u)
-    return values
-
-def xorshift(seed, n=10):
-    """Generador XORShift 32-bit."""
-    values = []
-    x = seed & 0xFFFFFFFF  # limitar a 32 bits
-    for _ in range(n):
-        x ^= (x << 13) & 0xFFFFFFFF
-        x ^= (x >> 17) & 0xFFFFFFFF
-        x ^= (x << 5) & 0xFFFFFFFF
-        values.append(x / 0xFFFFFFFF)  # normalizar
-    return values
+    y_next = (a * y_prev + c) % m
+    u_next = y_next / m
+    return y_next, u_next
 
 
-def mersenne_twister(seed, n=10):
-    random.seed(seed)  # Usa MT19937 internamente
-    return [random.random() for _ in range(n)]
+def xorshift(x_prev):
+    x = x_prev & 0xFFFFFFFF
+    x ^= (x << 13) & 0xFFFFFFFF
+    x ^= (x >> 17) & 0xFFFFFFFF
+    x ^= (x << 5) & 0xFFFFFFFF
+    u = x / 0xFFFFFFFF
+    return x, u
+
+
+class Generator:
+
+  def __init__(self, u_function):
+    self.u_function = u_function 
+    self.seed = SEED 
+    self.u = None
+
+  def gen_uniform(self):
+    y, u = self.u_function(self.seed)
+    self.u = u 
+    self.seed = y 
+    return u
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
