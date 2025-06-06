@@ -73,48 +73,33 @@ def simular_cola(arrivals, mu, generator):
 
     return tiempos_espera, tiempos_en_sistema
 
+def main(gen : Generator):
+    """
+    Dado un generador 'gen', corre toda la simulación, formatea
+    los valores en un data frame y lo devuelve. Las features del data frame son: 
 
-"""
-Dada una función que genera uniformes, corre toda la simulación, formatea
-los valores en un data frame y lo devuelve. Las features del data frame son: 
+    - TLlegada: Tiempo de llegada 
+    - TEspera: Tiempo de espera hasta ser atendido 
+    - TEnSistema: Tiempo total en el sistema.
+    - Duracion: Tiempo que duró la atención 
+    - TInicio: Tiempo en que se lo atendió 
+    - TFin: Tiempo en que se retiró de la cola
 
-- TLlegada: Tiempo de llegada 
-- TEspera: Tiempo de espera hasta ser atendido 
-- TEnSistema: Tiempo total en el sistema.
-- Duracion: Tiempo que duró la atención 
-- TInicio: Tiempo en que se lo atendió 
-- TFin: Tiempo en que se retiró de la cola
+    """
 
-"""
+    arrivals = poisson_no_homogeneo(48, gen)
+    tiempos_espera, tiempos_en_sistema = simular_cola(arrivals, 35, gen)
 
-generator_str = str(input("Generator name: "))
-
-gen = GCL()
-
-if generator_str == "GCL":
-    gen = GCL()
-elif generator_str == "XORShift":
-    gen = XORShift()
-elif generator_str == "PCG":
-    gen = PCG()
-else:
-    print("Se debe pasar alguno de los siguientes algoritmos como parametro: GCL, XORShift, PCG")
-    exit()
+    df = pd.DataFrame({
+            "TLlegada": arrivals,
+            "TEspera": tiempos_espera,
+            "TEnSistema": tiempos_en_sistema
+        })
 
 
-arrivals = poisson_no_homogeneo(48, gen)
-tiempos_espera, tiempos_en_sistema = simular_cola(arrivals, 35, gen)
+    # Calculamos duración (TEnSistema = TEspera + duración)
+    df["Duracion"] = df["TEnSistema"] - df["TEspera"]
+    df["TInicio"] = df["TLlegada"] + df["TEspera"]
+    df["TFin"] = df["TInicio"] + df["Duracion"]
 
-df = pd.DataFrame({
-        "TLlegada": arrivals,
-        "TEspera": tiempos_espera,
-        "TEnSistema": tiempos_en_sistema
-    })
-
-
-# Calculamos duración (TEnSistema = TEspera + duración)
-df["Duracion"] = df["TEnSistema"] - df["TEspera"]
-df["TInicio"] = df["TLlegada"] + df["TEspera"]
-df["TFin"] = df["TInicio"] + df["Duracion"]
-
-print(df)
+    return df
