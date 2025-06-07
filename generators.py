@@ -9,6 +9,7 @@ class Generator(ABC):
     def __init__(self):
         self.seed = SEED 
         self.u = None
+        self.name = ""
 
     def gen_uniform(self):
         y, u = self.algorithm(self.seed)
@@ -19,6 +20,9 @@ class Generator(ABC):
     @abstractmethod
     def algorithm(self, x_prev):
         pass
+
+    def getName(self) -> str:
+        return self.name
 
 
 class GCL(Generator):
@@ -33,10 +37,10 @@ class GCL(Generator):
 
     def __init__(self):
         super().__init__()
+        self.name = "GCL"
         self.a = 16807
         self.c = 0
         self.m = 2**31 - 1
-
 
     def algorithm(self, y_prev):
         y_next = (self.a * y_prev + self.c) % self.m
@@ -45,6 +49,10 @@ class GCL(Generator):
         
 
 class XORShift(Generator):
+
+    def __init__(self):
+        super().__init__()
+        self.name = "XORShift"
 
     def algorithm(self, x_prev):
         x = x_prev      & 0xFFFFFFFF
@@ -60,6 +68,7 @@ class PCG(Generator):
 
     def __init__(self):
         super().__init__()
+        self.name = "PCG"
 
         # inicializar state y las constantes con numeros aleatorios
         self.increment = np.uint64(1442695040888963407)

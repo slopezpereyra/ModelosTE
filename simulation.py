@@ -1,6 +1,7 @@
 import math
 import pandas as pd
 from generators import *
+from itertools import accumulate
 
 def lambda_t(t):
     """Intensidad del proceso en función del tiempo (en horas): 
@@ -57,6 +58,7 @@ def simular_cola(arrivals, mu, generator):
     corte = 0
     tiempos_espera = []
     tiempos_en_sistema = []
+    calcular_cola = []
 
     # Por cada arrival, debemos simular su tiempo de atención.
     for arr in arrivals:
@@ -67,11 +69,17 @@ def simular_cola(arrivals, mu, generator):
         corte = e
 
         espera = s - arr
+        if espera!=0:
+            calcular_cola.append((arr, 1))
+            calcular_cola.append((s, -1))
         en_sistema = e - arr
         tiempos_espera.append(espera)
         tiempos_en_sistema.append(en_sistema)
+    
+    calcular_cola.sort()
+    cola = [(x[0], s) for x, s in zip(calcular_cola, accumulate(x[1] for x in calcular_cola))]
 
-    return tiempos_espera, tiempos_en_sistema
+    return tiempos_espera, tiempos_en_sistema, cola
 
 def main(gen : Generator):
     """
@@ -85,10 +93,12 @@ def main(gen : Generator):
     - TInicio: Tiempo en que se lo atendió 
     - TFin: Tiempo en que se retiró de la cola
 
+    También devuelve la cola, con elementos ordenados (tiempo, personas en la cola)
+
     """
 
     arrivals = poisson_no_homogeneo(48, gen)
-    tiempos_espera, tiempos_en_sistema = simular_cola(arrivals, 35, gen)
+    tiempos_espera, tiempos_en_sistema, cola = simular_cola(arrivals, 35, gen)
 
     df = pd.DataFrame({
             "TLlegada": arrivals,
@@ -102,4 +112,4 @@ def main(gen : Generator):
     df["TInicio"] = df["TLlegada"] + df["TEspera"]
     df["TFin"] = df["TInicio"] + df["Duracion"]
 
-    return df
+    return df, cola
