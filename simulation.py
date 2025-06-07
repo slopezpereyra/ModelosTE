@@ -60,7 +60,7 @@ def simular_cola(arrivals, mu, generator):
 
     # Por cada arrival, debemos simular su tiempo de atención.
     for arr in arrivals:
-        duracion = sim_exponencial(1/mu, generator)
+        duracion = sim_exponencial(mu, generator)
         # (s, e): Tiempo en que empieza y termina la atención, respectivamente.
         s = max(arr, corte) 
         e = s + duracion
