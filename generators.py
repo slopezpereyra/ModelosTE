@@ -88,3 +88,7 @@ class PCG(Generator):
         random_int = int(self.rotr32(np.uint32(x >> 27), count))    # 27 = 32 - 5
         random_u = random_int / (np.uint32(0)-1)
         return 0, random_u
+
+
+
+

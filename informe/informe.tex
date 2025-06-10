@@ -45,6 +45,115 @@
 \maketitle
 \pagebreak
 
+\section{Resumen}
+
+El objetivo de este trabajo es explorar el rendimiento de distintos generadores
+de números aleatorios en la simulación de procesos complejos. Como caso de
+estudio, se toma un sistema de colas FIFO de un solo servidor donde los arribos
+siguen un proceso de Poisson no homogéneo y tiempos de atención exponenciales.
+Los generadores elegidos fueron:
+
+\begin{itemize}
+    \item Generador congruencial lineal (GCL)
+    \item XOR Shift 
+    \item PCG
+\end{itemize}
+
+\section{Descripción teórica de los generadores}
+
+El Generador Congruencial Lineal (GCL) genera números aleatorios a través de una
+fórmula recurrente:
+
+\begin{equation*}
+y_{n+1} = (ay_n + c) \mod m
+\end{equation*}
+
+El $k$-écimo número generado se corresponde con $y_k$ y el número inicial $y_0$
+es la semilla.
+
+Una ventaja clara es su simplicidad. Esto lo hace eficiente y fácil de
+implementar. Sin embargo, si no se eligen cuidadosamente los parámetros $a, c,
+m$, el generador puede producir periodos cortos. Esto es indeseable, dado que
+una vez que se conoce el periodo del generador, se conoce exactamente qué valor
+generará en cada iteración.
+
+Un teorema visto en el teórico garantiza que la longitud del período máximo es
+$m$ si y solo si:
+
+\begin{itemize}
+    \item $c$ y $m$ son coprimos,
+    \item $a - 1$ es divisible por todos los factores primos de $m$,
+    \item $a - 1$ es divisible por 4 si $m$ es múltiplo de 4.
+\end{itemize}
+
+Asumiendo que la elección de $a, c$ y $m$ satisface las condiciones del teorema,
+el GCL es un generador muy bueno. 
+
+Para garantizar que las variables generadas son uniformes, se normalizan los
+$y_n$ dividiéndoloso por $m$. Como $m > y_k$ para todo $k$, esta normalización
+es perfectamente lógica.
+
+\subsection{XorSHIFT}
+
+XorSHIFT denota en realidad una familia de generadores basados en operaciones
+bit a bit (XOR y desplazamientos). Dichas operaciones se realizan sobre una
+variable de estado interna. Es decir que, al igual que GCL, tiene una noción de
+estado y recurrencia. En nuestra implementación, dado un estado $y_k$, las
+operaciones realizadas son:
+
+\begin{verbatim}
+x = yk      & 0xFFFFFFFF
+x ^= (x << 13)  & 0xFFFFFFFF
+x ^= (x >> 17)  & 0xFFFFFFFF
+x ^= (x << 5)   & 0xFFFFFFFF
+\end{verbatim}
+
+La operación \texttt{\& 0xFFFFFFFF} asegura que las operaciones se mantengan
+dentro del rango de 32 bits. Las tres operaciones siguientes desplazamientos,
+mezclando los bits de $y_k$ y produciendo un nuevo número $\widetilde{y_{k+1}}$ (en
+binario). Finalmente, la última operación normaliza $\widetilde{y_{k+1}}$ haciendo 
+
+\begin{equation*}
+    y_{k+1} = \frac{\widetilde{y_{k+1}}}{2^{32} - 1}
+\end{equation*}
+
+dando el nuevo valor generado, que ahora pasará a ser el estado.
+
+Las constantes 13, 17 y 15 no son teóricas: se eligieron porque la
+experimentación empírica mostró que producen buenas propiedades estadísticas. El
+periodo de XorSHIFT depende del tamaño (en bits) del estado y en general es
+largo. Al operar en tan bajo nivel, es extremadamente eficiente. 
+
+
+\subsection{PCG (Permuted Congruential Generator)}
+
+El Generador Congruencial Permutado (PCG) es una mejora de los GCL
+tradicionales. Consiste en aplicar una permutación sobre los bits del output de
+un GCL. En nuestro caso particular, tomamos
+
+\[
+X_{n+1} = aX_n + c \mod 2^{64}
+\]
+
+Aplicamos luego una rotación a los bits más significativos del estado. La
+cantidad de rotación depende a su vez de algunos bits del estado mismo.
+
+\begin{equation*}
+\texttt{output = rot32(state $\gg$ 27, state $\gg$ 59)}
+\end{equation*}
+
+Esto proporciona una distribución de salida más uniforme y pasa muchas más
+pruebas estadísticas que los GCL clásicos o incluso que XorSHIFT. Además,
+mantiene eficiencia computacional y es fácil de implementar. 
+
+El valor resultante se normaliza al intervalo $[0, 1]$ del mismo modo que en
+XORShift:
+
+\begin{equation*}
+u = \frac{\text{output}}{2^{32} - 1}
+\end{equation*}
+
+
 \section{Descripción del problema}
 
 Sea 
@@ -53,7 +162,13 @@ Sea
     \lambda(t) = 20 + 10\cos \left( \frac{\pi t}{12} \right) 
 \end{equation}
 
-\subsection{Caracterizando propiedades del sistema}
+Se desea simular un sistema de colas de un solo servidor, donde los arribos
+siguen un proceso de Poisson no homogéneo con intensidad $\lambda(t)$ y tiempos
+de atención exponenciales con media $\mu = 35 ~ \text{clientes}/h$. El sistema
+atiende por orden de llegada y no hay límite a la cantidad de elementos en una
+cola.
+
+\subsection{Caracterizando propiedades simples del sistema}
 
 Como el coseno oscila en $[-1, 1]$, $\lambda(t)$ tiene máximo 30 y mínimo 10. Más
 aún, $\pi\left( \frac{\pi t}{12} \right) $ completa un ciclo cuando $\pi t / 12
@@ -102,14 +217,44 @@ Como se atiende $35$ personas por hora, esto significa que incluso en los
 períodos de mayor actividad se espera que el servidor atienda a todas las
 personas.
 
+\subsection{Método de simulación}
+
+La simulación consiste primero en generar el proceso no homogéneo que representa
+la llegada de clientes a la cola. Esto es logrado a través de la función 
+
+\begin{equation*}
+    \texttt{poisson\_no\_homogeneo(T, generator, ...) }
+\end{equation*}
+
+que simula el proceso de Poisson no homogéneo usando un algoritmo generador de
+números aleatorios dado. La simulación del proceso de Poisson usa el método de
+adelgazamiento visto en clase. Una vez las llegadas (\texttt{arrivals}) se han simulado, la función
+
+\begin{equation*}
+\texttt{simular\_cola(arrivals, mu, generator)}
+\end{equation*}
+
+simula la atención en la cola de un servidor FIFO con los parámetros deseados
+(e.g. tiempo de atención exponencial con media \texttt{mu} clientes por hora). La función \texttt{main}
+realiza la simulación con las funciones antedichas y organiza los resultados en
+una base de datos bien estructurada.
 
 
+\section{Metodología}
 
+El experimento se implementó en Python utilizando librerías para el análisis y
+el gráfico de los datos. La simulación y los generadores fueron implementados en
+archivos \texttt{.py}, pero ejecutados y analizados en una notebook de Jupyter
+titulada \texttt{Graficos.ipynb}. Los gráficos se realizaron utilizando
+\texttt{seaborn}, porque consideramos que produce gráficos más bonitos que
+\texttt{matplotlib} crudo. 
 
+\section{Resultados}
 
-
-
-
+Tal como esperábamos por lo observado en la sección \textbf{3.1}, la mayor parte
+de los clientes fueron atendidos en cada simulación. Encontramos diferencias
+para nada despreciables entre los generadores. Por ejemplo, en la distribución
+de los tiempos de espera,
 
 
 
