@@ -1,0 +1,139 @@
+\documentclass[a4paper, 12pt]{article}
+
+\usepackage{parskip}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{newtxtext} \usepackage{newtxmath}
+\usepackage{amsmath, amssymb}
+\newtheorem{problem}{Problem}
+\newtheorem{example}{Example}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\newtheorem{problem}{Problem}
+\newtheorem{example}{Example} \newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{theorem}{Theorem}
+\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+
+\begin{document}
+
+\begin{titlepage}
+   \begin{center}
+       \vspace*{1cm}
+
+       \Huge
+       \textbf{Modelos y simulación - Trabajo especial}
+
+       \vspace{0.5cm}
+        FAMAF - UNC
+            
+       \vspace{1.5cm}
+       \large
+       \textbf{Juliana García - Santiago López Pereyra}
+       \normalsize
+
+       \vfill
+            
+            
+     
+   \end{center}
+\end{titlepage}
+
+   
+\maketitle
+\pagebreak
+
+\section{Descripción del problema}
+
+Sea 
+
+\begin{equation}
+    \lambda(t) = 20 + 10\cos \left( \frac{\pi t}{12} \right) 
+\end{equation}
+
+\subsection{Caracterizando propiedades del sistema}
+
+Como el coseno oscila en $[-1, 1]$, $\lambda(t)$ tiene máximo 30 y mínimo 10. Más
+aún, $\pi\left( \frac{\pi t}{12} \right) $ completa un ciclo cuando $\pi t / 12
+= 2 \pi \iff t = 24$. Se sigue que en $t = 12$ alcanza su mínimo (mitad del
+ciclo recorrido). 
+
+Nos interesa caracterizar los períodos donde el servidor tendrá mayor y menor
+actividad. Los caracterizaremos como las regiones de $t$ en que $\lambda(t)$
+está por encima y por debajo de su punto medio, respectivamente.
+No es difícil ver que $\lambda(t) > 20 \iff \cos(\pi t / 12) > 0$. Pero el
+coseno es positivo si su argumento pertenece a $[- \pi / 2, \pi / 2]$. Por ende, 
+
+\begin{align}
+    \lambda(t) > 20 &\iff -\pi / 2 + 2k\pi \leq \frac{\pi t}{12}  \leq \pi / 2 +
+    2k \pi\\ 
+                    &\iff-6 + 24k \leq t \leq 6 + 24k
+\end{align}
+
+Si restringimos $t \in [0, 48]$, esto vale si y solo si 
+
+\begin{equation}
+    t \in (0, 6) \cup  (18, 30) \cup  (42, 48)
+\end{equation}
+
+El complemento de este conjunto sobre el universo $[0, 48]$ nos da los periodos
+de menor actividad.
+~
+El valor medio de llegadas en las 48 horas es:
+
+\begin{equation}
+\int_0^{48} \lambda(t) ~ dt = \int_0^1 
+20 + 10 \cos(\frac{\pi
+    t}{12})
+    ~ dt = 960
+\end{equation}
+
+Esto implica que $\frac{960}{48} = 20$ es el valor medio de llegadas por hora.
+Incluso en períodos de máxima actividad, la cantidad esperada de llegadas por
+hora es prácticamente la misma:
+
+\begin{equation}
+    \frac{1}{6}\int_0^{6}\lambda(t) ~ dt = 21
+\end{equation}
+
+Como se atiende $35$ personas por hora, esto significa que incluso en los
+períodos de mayor actividad se espera que el servidor atienda a todas las
+personas.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}
+
+
+
