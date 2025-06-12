@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1749590612.54889 "informe.tex" "informe.pdf" "informe" 1749590613.32934 2
+["pdflatex"] 1749749517.0414 "informe.tex" "informe.pdf" "informe" 1749749517.75785 2
   "/etc/texmf/web2c/texmf.cnf" 1740662799.63242 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/newtx/ntx-ec-tlf.enc" 1698694482 2914 fdbc4a54b9bc76f4551b5303f2737d33 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/newtx/ntx-ot1-tlf.enc" 1422827479 2083 60e36f8eac802fcaf19eabe2633b406e ""
@@ -108,8 +108,8 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1707919699 40399 f2c302f7d2af602abb742093540a5834 ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1740670969.59643 5472669 54eaf61a88b6b7896ebd0dac973cb29c ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1740670991 8214096 2cc5ed7d441cd7dd7f6cf9e30d4bb5a5 ""
-  "informe.aux" 1749590613.22848 1051 c8406255234b5db514fa27c52f1ae42b "pdflatex"
-  "informe.tex" 1749590610.6963 8756 8cb6cc532257d8397da493bf56ea89cd ""
+  "informe.aux" 1749749517.67022 1051 c8406255234b5db514fa27c52f1ae42b "pdflatex"
+  "informe.tex" 1749749516.84119 9031 0d7da3cd1cd8be80bcb9dce5ccb00c45 ""
   (generated)
   "informe.aux"
   "informe.log"
