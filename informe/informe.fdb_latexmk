@@ -1,5 +1,5 @@
 # Fdb version 4
-["pdflatex"] 1749924804.60101 "informe.tex" "informe.pdf" "informe" 1749924806.47696 2
+["pdflatex"] 1749924978.70923 "informe.tex" "informe.pdf" "informe" 1749924980.55832 2
   "/etc/texmf/web2c/texmf.cnf" 1740662799.63242 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/newtx/ntx-ec-tlf.enc" 1698694482 2914 fdbc4a54b9bc76f4551b5303f2737d33 ""
   "/usr/share/texlive/texmf-dist/fonts/enc/dvips/newtx/ntx-ot1-tlf.enc" 1422827479 2083 60e36f8eac802fcaf19eabe2633b406e ""
@@ -151,9 +151,9 @@
   "Media/test_PCG.png" 1749923279.29588 36429 af6c98ffea34e3076623eca297395ea5 ""
   "Media/test_XORShift.png" 1749923279.29588 37033 aad54ecddd0f51bbcd2c5728727b41f6 ""
   "Media/tiempos_de_ejecucion.png" 1749923279.29588 26858 4262bf83b31a06f0bea49795c4be4b60 ""
-  "informe.aux" 1749924806.36919 2962 3e3defb79a7f50fb768d5ed2d3737d01 "pdflatex"
-  "informe.out" 1749924806.37019 2059 8acabf3b13a44639ad4eb0ea2347bcf5 "pdflatex"
-  "informe.tex" 1749924803.81919 12642 7f9aae035274d07a6c59b8afaf2b6f79 ""
+  "informe.aux" 1749924980.45068 2962 3e3defb79a7f50fb768d5ed2d3737d01 "pdflatex"
+  "informe.out" 1749924980.45068 2059 8acabf3b13a44639ad4eb0ea2347bcf5 "pdflatex"
+  "informe.tex" 1749924978.29567 12671 1ebfc265f44c9da30ac627aab001dc5f ""
   (generated)
   "informe.aux"
   "informe.log"
