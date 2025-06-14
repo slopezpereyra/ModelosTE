@@ -7,6 +7,9 @@
 \usepackage{amssymb}
 \usepackage{newtxtext} \usepackage{newtxmath}
 \usepackage{amsmath, amssymb}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{placeins}
+\usepackage{hyperref}
 \newtheorem{problem}{Problem}
 \newtheorem{example}{Example}
 \newtheorem{lemma}{Lemma}
@@ -16,6 +19,14 @@
 \newtheorem{lemma}{Lemma}
 \newtheorem{theorem}{Theorem}
 \DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
+
+\newcommand{\insertimage}[1]{%
+    \begin{figure}[hbtp!]
+        \centering
+        \includegraphics[width=0.5\linewidth]{#1}
+        \label{fig:#1}
+    \end{figure}
+}
 
 \begin{document}
 
@@ -61,6 +72,8 @@ Los generadores elegidos fueron:
 
 \section{Descripción teórica de los generadores}
 
+\subsection{GCL}
+
 El Generador Congruencial Lineal (GCL) genera números aleatorios a través de una
 fórmula recurrente:
 
@@ -68,7 +81,7 @@ fórmula recurrente:
 y_{n+1} = (ay_n + c) \mod m
 \end{equation*}
 
-El $k$-écimo número generado se corresponde con $y_k$ y el número inicial $y_0$
+El $k$-ésimo número generado se corresponde con $y_k$ y el número inicial $y_0$
 es la semilla.
 
 Una ventaja clara es su simplicidad. Esto lo hace eficiente y fácil de
@@ -125,22 +138,28 @@ periodo de XorSHIFT depende del tamaño (en bits) del estado y en general es
 largo. Al operar en tan bajo nivel, es extremadamente eficiente. 
 
 
-\subsection{PCG (Permuted Congruential Generator)}
+\subsection{PCG}
 
 El Generador Congruencial Permutado (PCG) es una mejora de los GCL
 tradicionales. Consiste en aplicar una permutación sobre los bits del output de
-un GCL. En nuestro caso particular, tomamos
+un GCL.  
+Aunque el algoritmo es simple, es más complejo que los otros y por lo tanto es más lento, pero según investigamos es más confiable.
+
+Nosotros usamos la variante PCG-XSH-RR que es la más recomendada en general.
+En el algoritmo se mantiene una variable global entera de 64 bits, el estado, que va evolucionando con cada iteración.
+Entonces tomamos:
 
 \[
 X_{n+1} = aX_n + c \mod 2^{64}
 \]
 
-Aplicamos luego una rotación a los bits más significativos del estado. La
-cantidad de rotación depende a su vez de algunos bits del estado mismo.
+Donde $X_n$ son los bits 27 a 58 del estado (32 bits). Luego se usan los bits 59 al 63 (5 bits) para rotar $X_n$.
 
 \begin{equation*}
 \texttt{output = rot32(state $\gg$ 27, state $\gg$ 59)}
 \end{equation*}
+
+Y los bits restantes son usados para evolucionar el estado.
 
 Esto proporciona una distribución de salida más uniforme y pasa muchas más
 pruebas estadísticas que los GCL clásicos o incluso que XorSHIFT. Además,
@@ -258,15 +277,48 @@ cada prueba, se simularon $N_{\text{sim}} = 1000$ uniformes utilizando el módul
 
 \section{Resultados}
 
-Tal como esperábamos por lo observado en la sección \textbf{3.1}, la mayor parte
-de los clientes fueron atendidos en cada simulación. Encontramos diferencias
-poco significativas en el efecto del generador elegido sobre los resultados de
-la simulación. Sin embargo, mientras que las simulaciones bajo GCL y XORShift
-tomaron aproximadamente la misma cantidad de tiempo (0.009693 y 0.009161,
+\subsection{Tests de aleatoriedad}
+
+\insertimage{Media/test_GCL.png}
+\insertimage{Media/test_XORShift.png}
+\insertimage{Media/test_PCG.png}
+
+\FloatBarrier
+
+\subsection{Simulación}
+
+\insertimage{Media/tiempos_de_ejecucion.png}
+\insertimage{Media/distrib_tiempos_espera.png}
+\insertimage{Media/promedio_tiempo_en_sis.png}
+\insertimage{Media/evolucion_cola_tiempo.png}
+\insertimage{Media/histograma_tiempos_espera.png}
+\insertimage{Media/distribucion_del_tiempo_e_histograma_tiempo_servicio.png}
+\insertimage{Media/porcentaje_servidor_ocupado.png}
+\insertimage{Media/tasa_utilizacion_servidor_tiempo.png}
+
+\FloatBarrier
+
+\section{Conclusiones}
+
+Tal como esperábamos por lo observado en la sección \textbf{3.1}, en cada simulación fueron atendidos la mayor parte de los clientes. Además en los gráficos de la evolución de la cola en el tiempo y de la tasa de utilización del servidor en el tiempo se puede ver claramente como varían los gráficos con las horas del día, que va de acuerdo a la distribución de la llegada de clientes que buscabamos simular.
+
+Encontramos diferencias poco significativas en el efecto del generador elegido sobre los resultados de la simulación.
+Sin embargo, mientras que las simulaciones bajo GCL y XORShift
+tomaron aproximadamente la misma cantidad de tiempo (0.005668 y 0.004248,
 respectivamente), la simulación bajo PCG fue significativamente más lenta 
-(0.068696).
+(0.015764) que era lo que esperábamos.
 
+Algunos datos como el tiempo de ejecución pueden variar en el archivo .ipynb por haberlo ejecutado luego de generar los gráficos del informe.
 
+Finalmente consideramos importante señalar que los resultados fueron obtenidos con una semilla única para todos los generadores. Hicimos algunas pocas pruebas manuales comparando el comportamiento con distintas semillas y los resultados fueron significativamente diferentes sobre algunas variables como la distribución del tiempo de espera, el promedio del tiempo en el sistema y el porcentaje de tiempo en que el servidor está ocupado. Además el p-valor de los generadores oscilaba entre 7.5 y 0.1 con distintas semillas e incluso llegamos a obtener 0.001 en XORShift, que es suficiente para rechazarlo como generador. Un valor que se mantuvo relativamente constante fue el tiempo de ejecución de la simulación.
+
+Recomendamos para trabajos posteriores correr la simulación con varias semillas distintas y comparar las medias y las desviaciones de las distintas variables para poder sacar mejores conclusiones sobre los generadores y analizar si estos son sensibles al cambio de la semilla.
+
+\section{Código Fuente}
+
+El código del proyecto se puede encontrar en el archivo .zip adjunto en el aula junto con el informe o en el siguiente 
+\href{https://github.com/slopezpereyra/ModelosTE}{\color{blue}{link}}
+de nuestro repositorio
 
 
 

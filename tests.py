@@ -46,6 +46,7 @@ def plot_overlapping_pairs(generator: gen.Generator, samples):
     plt.ylabel('$x_{n+1}$')
     plt.title(f'Overlapping pairs - {generator.getName()}')
     plt.grid(True)
+    plt.savefig(f'informe/Media/test_{generator.getName()}.png')
     plt.show()
   
 def run_tests():

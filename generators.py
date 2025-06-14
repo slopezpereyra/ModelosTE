@@ -1,7 +1,7 @@
 import numpy as np
 from abc import ABC, abstractmethod
 
-SEED = 48151
+SEED = 84392
 
 
 class Generator(ABC):
@@ -75,17 +75,24 @@ class PCG(Generator):
         self.state = np.uint64(SEED + self.increment)
         self.multiplier = np.uint64(6364136223846793005)
 
+    # Rota x a la derecha por r bits
     def rotr32(self, x, r):
         #with np.errstate(over='ignore'):               # ignorar warning de overflow, buscamos que esto ocurra
         return x >> r | x << (~r & 31)
 
+    """
+    Uso de los bits:
+    59-63 (5)   cantidad que se rota
+    27-58 (32)  El resultado que se rotará
+    resto (27)  Para continuar generando
+    """
     def algorithm(self, _):
         x = np.uint64(self.state)
         count = np.uint32(x >> 59)                      # 59 = 64 - 5
         #with np.errstate(over='ignore'):               # ignorar warning de overflow, buscamos que esto ocurra
         self.state = np.uint64(x * self.multiplier + self.increment)
-        x ^= x >> 18
-        random_int = int(self.rotr32(np.uint32(x >> 27), count))    # 27 = 32 - 5
+        x ^= x >> 18                                    # 18 = (64 - 27)/2
+        random_int = int(self.rotr32(np.uint32(x >> 27), count))    # 27 = 64 -5 -32
         random_u = random_int / (np.uint32(0)-1)
         return 0, random_u
 
